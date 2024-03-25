@@ -159,6 +159,7 @@ const createEnvelope = async (args) => {
     envelopeDefinition: envelope,
   });
   let envelopeId = results.envelopeId;
+  args.envelopeArgs.envelopeId = envelopeId;
 
   let viewRequest = makeRecipientViewRequest(args.envelopeArgs);
   // Call the CreateRecipientView API
@@ -187,7 +188,7 @@ const makeRecipientViewRequest = (args) => {
   // the DocuSign signing. It's usually better to use
   // the session mechanism of your web framework. Query parameters
   // can be changed/spoofed very easily.
-  viewRequest.returnUrl = args.dsReturnUrl;
+  viewRequest.returnUrl = `${args.dsReturnUrl}?envelope_id=${args.envelopeId}`;
 
   // How has your app authenticated the user? In addition to your app's
   // authentication, you can include authenticate steps from DocuSign.

@@ -8,7 +8,6 @@ const makeSenderViewRequest = async (req, res) => {
 	const accountInfo = await docusignService.authenticate();
 
 	try {
-
 		const envelopeArgs = {
 			signerEmail: req.body.email,
 			signerName: req.body.name,
@@ -24,7 +23,6 @@ const makeSenderViewRequest = async (req, res) => {
 			dsReturnUrl: req.body.return_url,
 		};
 
-		
 		const doc1Base64 = Buffer.from(template.document1(envelopeArgs)).toString(
 			'base64',
 		);
@@ -61,21 +59,34 @@ const makeRecipientViewRequest = async (req, res) => {
 			dsReturnUrl: req.body.return_url,
 		};
 
-		envelopeArgs.doc1b64 = Buffer.from(template.document1(envelopeArgs)).toString(
-			'base64',
-		);
+		envelopeArgs.doc1b64 = Buffer.from(
+			template.document1(envelopeArgs),
+		).toString('base64');
 
 		const recipientView = await docusignService.createEnvelope(args);
 
 		return res.send(recipientView);
-	} 
-	catch (error) {
+	} catch (error) {
 		console.log(error.stack);
 		res.send(error.stack);
 	}
-}
+};
+
+const getEnvelope = async (req, res) => {
+	const { envelope_id, event } = req.query;
+	const accountInfo = await docusignService.authenticate();
+	const args = {
+		...accountInfo,
+		envelopeId: envelope_id,
+	};
+
+	const envelope = await docusignService.getEnvelope(args);
+
+	return res.send({ envelope, event });
+};
 
 module.exports = {
 	makeSenderViewRequest,
 	makeRecipientViewRequest,
+	getEnvelope,
 };
