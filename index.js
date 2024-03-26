@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 const docusignService = require('./services/docusign');
 const docusignController = require('./controllers/docusign.controller');
+const morgan = require('morgan');
 
 const main = async () => {
     docusignService.authenticate();
@@ -11,6 +12,7 @@ const main = async () => {
     const app = express();
 
     app.use(bodyParser.json());
+    app.use(morgan('combined'));
 
     app.get('/', docusignController.getEnvelope);
     app.post('/create', docusignController.createEnvelope);
