@@ -1,3 +1,6 @@
 .env
 credentials/docusign/*
+
 node_modules
+
+public/*

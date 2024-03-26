@@ -74,6 +74,15 @@ const getEnvelope = async (args) => {
 		null,
 	);
 
+  const docs = await envelopesApi.getDocument(
+    args.accountId,
+    args.envelopeId,
+    'combined',
+    null,
+  );
+
+  fs.writeFileSync(`./public/${args.envelopeId}.pdf`, docs, { encoding: 'binary' });
+
   return results;
 };
 
