@@ -87,7 +87,7 @@ const getEnvelope = async (args) => {
 /**
  * To construct envelope object for payload to call docusign create api
  * @param {Array<object>} args 
- * @param {string } doc1b64 - Base64 string of the document to be use for signing
+ * @param {string} doc1b64 - Base64 string of the document to be use for signing
  * @returns {object} Construct envelope object to be use as request payload
  */
 const makeEnvelope = (args, doc1b64) => {
