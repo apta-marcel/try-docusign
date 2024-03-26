@@ -113,9 +113,28 @@ const createEnvelope = async (req, res) => {
 	}
 }
 
+const listRecipients = async (req, res) => {
+	try {
+		const accountInfo = await docusignService.authenticate();
+
+		const args = {
+			...accountInfo,
+			envelopeId: req.query.envelope_id,
+		}
+		
+		const recipients = await docusignService.listRecipients(args);
+
+		return res.status(200).send(recipients);
+	}
+	catch(e) {
+		return res.status(500).send(e.stack);
+	}
+}
+
 module.exports = {
 	makeSenderViewRequest,
 	makeRecipientViewRequest,
 	getEnvelope,
 	createEnvelope,
+	listRecipients,
 };
