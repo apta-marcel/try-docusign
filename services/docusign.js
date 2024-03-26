@@ -63,25 +63,13 @@ const authenticate = async () => {
 };
 
 const getEnvelope = async (args) => {
-	let dsApiClient = new docusign.ApiClient();
-	dsApiClient.setBasePath(args.basePath);
-	dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
-	let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+	let envelopesApi = newEnvelopesApi(args);
 
 	const results = await envelopesApi.getEnvelope(
 		args.accountId,
 		args.envelopeId,
 		null,
 	);
-
-  const docs = await envelopesApi.getDocument(
-    args.accountId,
-    args.envelopeId,
-    'combined',
-    null,
-  );
-
-  fs.writeFileSync(`./public/${args.envelopeId}.pdf`, docs, { encoding: 'binary' });
 
   return results;
 };
@@ -153,10 +141,7 @@ const makeEnvelope = (args) => {
 }
 
 const createEnvelope = async (args) => {
-  let dsApiClient = new docusign.ApiClient();
-  dsApiClient.setBasePath(args.basePath);
-  dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
-  let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+	let envelopesApi = newEnvelopesApi(args);
   let results = null;
 
   // Step 1. Make the envelope request body
@@ -218,10 +203,7 @@ const makeRecipientViewRequest = (args) => {
 }
 
 const requestSigning = async (args) => {
-  let dsApiClient = new docusign.ApiClient();
-  dsApiClient.setBasePath(args.basePath);
-  dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
-  let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+	let envelopesApi = newEnvelopesApi(args);
 
   let viewRequest = makeRecipientViewRequest(args.envelopeArgs);
   // Call the CreateRecipientView API
@@ -234,10 +216,7 @@ const requestSigning = async (args) => {
 }
 
 const listRecipients = async (args) => {
-  let dsApiClient = new docusign.ApiClient();
-	dsApiClient.setBasePath(args.basePath);
-	dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
-	let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+	let envelopesApi = newEnvelopesApi(args);
 
   const recipients = await envelopesApi.listRecipients(
     args.accountId,
@@ -249,10 +228,7 @@ const listRecipients = async (args) => {
 }
 
 const getDocument = async (args) => {
-	let dsApiClient = new docusign.ApiClient();
-	dsApiClient.setBasePath(args.basePath);
-	dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
-	let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+	let envelopesApi = newEnvelopesApi(args);
 
   const docs = await envelopesApi.getDocument(
     args.accountId,
@@ -263,6 +239,13 @@ const getDocument = async (args) => {
 
   return docs;
 };
+
+const newEnvelopesApi = (args) => {
+  let dsApiClient = new docusign.ApiClient();
+	dsApiClient.setBasePath(args.basePath);
+	dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
+	return new docusign.EnvelopesApi(dsApiClient);
+}
 
 module.exports = {
 	authenticate,
