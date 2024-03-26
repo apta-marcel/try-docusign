@@ -12,7 +12,7 @@ const main = async () => {
     const app = express();
 
     app.use(bodyParser.json());
-    app.use(morgan('combined'));
+    app.use(morgan('dev'));
 
     app.get('/', docusignController.getEnvelope);
     app.post('/create', docusignController.createEnvelope);
