@@ -13,6 +13,7 @@ const main = async () => {
     app.use(bodyParser.json());
 
     app.get('/', docusignController.getEnvelope);
+    app.post('/create', docusignController.createEnvelope);
     app.post('/sign', docusignController.makeRecipientViewRequest);
 
     app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}`));

@@ -116,10 +116,16 @@ const makeEnvelope = (args) => {
     // We set the clientUserId to enable embedded signing for the recipient
     // We're setting the parameters via the object creation
     let signer1 = docusign.Signer.constructFromObject({
-      email: args.signerEmail,
-      name: args.signerName,
+      email: 'krabs@yopmail.com',
+      name: 'Eugene Krabs',
       clientUserId: args.signerClientId,
       recipientId: 1,
+    });
+    let signer2 = docusign.Signer.constructFromObject({
+      email: args.signerEmail,
+      name: args.signerName,
+      clientUserId: args.signerClientId + 1000,
+      recipientId: 2,
     });
   
     // Create signHere fields (also known as tabs) on the documents,
@@ -133,21 +139,33 @@ const makeEnvelope = (args) => {
       anchorUnits: 'pixels',
       anchorXOffset: '20',
     });
+    let signHere2 = docusign.SignHere.constructFromObject({
+      anchorString: '**signature_2**',
+      anchorYOffset: '10',
+      anchorUnits: 'pixels',
+      anchorXOffset: '20',
+    });
+
     // Tabs are set per recipient / signer
     let signer1Tabs = docusign.Tabs.constructFromObject({
       signHereTabs: [signHere1],
     });
     signer1.tabs = signer1Tabs;
+
+    let signer2Tabs = docusign.Tabs.constructFromObject({
+      signHereTabs: [signHere2],
+    });
+    signer2.tabs = signer2Tabs;
   
     // Add the recipient to the envelope object
     let recipients = docusign.Recipients.constructFromObject({
-      signers: [signer1],
+      signers: [signer1, signer2],
     });
     env.recipients = recipients;
   
     // Request that the envelope be sent by setting |status| to "sent".
     // To request that the envelope be created as a draft, set to "created"
-    env.status = 'sent';
+    env.status = 'created';
   
     return env;
 }
@@ -167,17 +185,8 @@ const createEnvelope = async (args) => {
   results = await envelopesApi.createEnvelope(args.accountId, {
     envelopeDefinition: envelope,
   });
-  let envelopeId = results.envelopeId;
-  args.envelopeArgs.envelopeId = envelopeId;
-
-  let viewRequest = makeRecipientViewRequest(args.envelopeArgs);
-  // Call the CreateRecipientView API
-  // Exceptions will be caught by the calling function
-  const recipientView = await envelopesApi.createRecipientView(args.accountId, envelopeId, {
-    recipientViewRequest: viewRequest,
-  });
-
-  return recipientView;
+  
+  return results;
 }
 
 const makeRecipientViewRequest = (args) => {
@@ -206,6 +215,9 @@ const makeRecipientViewRequest = (args) => {
 
   // Recipient information must match embedded recipient info
   // we used to create the envelope.
+  // viewRequest.email = args.signerEmail;
+  // viewRequest.userName = args.signerName;
+  // viewRequest.clientUserId = args.signerClientId;
   viewRequest.email = args.signerEmail;
   viewRequest.userName = args.signerName;
   viewRequest.clientUserId = args.signerClientId;
@@ -223,9 +235,26 @@ const makeRecipientViewRequest = (args) => {
   return viewRequest;
 }
 
+const requestSigning = async (args) => {
+  let dsApiClient = new docusign.ApiClient();
+  dsApiClient.setBasePath(args.basePath);
+  dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
+  let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+
+  let viewRequest = makeRecipientViewRequest(args.envelopeArgs);
+  // Call the CreateRecipientView API
+  // Exceptions will be caught by the calling function
+  const recipientView = await envelopesApi.createRecipientView(args.accountId, args.envelopeArgs.envelopeId, {
+    recipientViewRequest: viewRequest,
+  });
+
+  return recipientView;
+}
+
 module.exports = {
 	authenticate,
 	createEnvelope,
   getEnvelope,
   makeRecipientViewRequest,
+  requestSigning,
 };
