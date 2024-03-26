@@ -84,13 +84,16 @@ const getEnvelope = async (req, res) => {
 
 const createEnvelope = async (req, res) => {
 	const accountInfo = await docusignService.authenticate();
+	const { envelope_args } = req.body;
 
 	try {
-		let envelopeArgs = {
-			signerEmail: req.body.email,
-			signerName: req.body.name,
-			signerClientId: signerClientId,
-		};
+		let envelopeArgs = envelope_args.map(arg => {
+			return {
+				signerEmail: arg.email,
+				signerName: arg.name,
+				signerClientId: arg.signer_client_id,
+			}
+		})
 
 		const args = {
 			...accountInfo,
@@ -98,7 +101,7 @@ const createEnvelope = async (req, res) => {
 		};
 
 		envelopeArgs.doc1b64 = Buffer.from(
-			template.document1(envelopeArgs),
+			template.document1(envelopeArgs[1]),
 		).toString('base64');
 
 		const envelope = await docusignService.createEnvelope(args);

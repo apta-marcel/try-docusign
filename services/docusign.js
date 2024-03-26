@@ -115,57 +115,39 @@ const makeEnvelope = (args) => {
     // Create a signer recipient to sign the document, identified by name and email
     // We set the clientUserId to enable embedded signing for the recipient
     // We're setting the parameters via the object creation
-    let signer1 = docusign.Signer.constructFromObject({
-      email: 'krabs@yopmail.com',
-      name: 'Eugene Krabs',
-      clientUserId: args.signerClientId,
-      recipientId: 1,
-    });
-    let signer2 = docusign.Signer.constructFromObject({
-      email: args.signerEmail,
-      name: args.signerName,
-      clientUserId: args.signerClientId + 1000,
-      recipientId: 2,
-    });
-  
-    // Create signHere fields (also known as tabs) on the documents,
-    // We're using anchor (autoPlace) positioning
-    //
-    // The DocuSign platform seaches throughout your envelope's
-    // documents for matching anchor strings.
-    let signHere1 = docusign.SignHere.constructFromObject({
-      anchorString: '**signature_1**',
-      anchorYOffset: '10',
-      anchorUnits: 'pixels',
-      anchorXOffset: '20',
-    });
-    let signHere2 = docusign.SignHere.constructFromObject({
-      anchorString: '**signature_2**',
-      anchorYOffset: '10',
-      anchorUnits: 'pixels',
-      anchorXOffset: '20',
-    });
+    let signers = [];
+    let recipientId = 1;
+    for (const arg of args) {
+      let signer = docusign.Signer.constructFromObject({
+        email: arg.signerEmail,
+        name: arg.signerName,
+        clientUserId: arg.signerClientId,
+        recipientId,
+      });
 
-    // Tabs are set per recipient / signer
-    let signer1Tabs = docusign.Tabs.constructFromObject({
-      signHereTabs: [signHere1],
-    });
-    signer1.tabs = signer1Tabs;
+      let signHere = docusign.SignHere.constructFromObject({
+        anchorString: `**signature_${recipientId}**`,
+        anchorYOffset: '10',
+        anchorUnits: 'pixels',
+        anchorXOffset: '20',
+      });
 
-    let signer2Tabs = docusign.Tabs.constructFromObject({
-      signHereTabs: [signHere2],
+      let signerTabs = docusign.Tabs.constructFromObject({
+        signHereTabs: [signHere],
+      });
+      signer.tabs = signerTabs;
+
+      signers.push(signer);
+
+      recipientId++;
+    }
+    env.recipients = docusign.Recipients.constructFromObject({
+      signers,
     });
-    signer2.tabs = signer2Tabs;
-  
-    // Add the recipient to the envelope object
-    let recipients = docusign.Recipients.constructFromObject({
-      signers: [signer1, signer2],
-    });
-    env.recipients = recipients;
   
     // Request that the envelope be sent by setting |status| to "sent".
     // To request that the envelope be created as a draft, set to "created"
-    env.status = 'created';
+    env.status = 'sent';
   
     return env;
 }
