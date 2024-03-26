@@ -248,6 +248,22 @@ const listRecipients = async (args) => {
   return recipients;
 }
 
+const getDocument = async (args) => {
+	let dsApiClient = new docusign.ApiClient();
+	dsApiClient.setBasePath(args.basePath);
+	dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
+	let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+
+  const docs = await envelopesApi.getDocument(
+    args.accountId,
+    args.envelopeId,
+    'combined',
+    null,
+  );
+
+  return docs;
+};
+
 module.exports = {
 	authenticate,
 	createEnvelope,
@@ -255,4 +271,5 @@ module.exports = {
   makeRecipientViewRequest,
   requestSigning,
   listRecipients,
+  getDocument,
 };
