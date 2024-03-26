@@ -66,7 +66,7 @@ const createEnvelope = async (req, res) => {
 			envelopeArgs,
 		};
 
-		envelopeArgs.doc1b64 = Buffer.from(
+		args.doc1b64 = Buffer.from(
 			template.document1(envelopeArgs[1]),
 		).toString('base64');
 

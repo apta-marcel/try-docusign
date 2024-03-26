@@ -3,6 +3,10 @@ const fs = require('fs');
 
 const SCOPES = ['signature', 'impersonation'];
 
+/**
+ * Function to authenticate and get credentials to use docusign api
+ * @returns {Promise<object>} Represent account info containing credentials for making request to docusign
+ */
 const authenticate = async () => {
 	const dsOauthServer = process.env.DS_AUTH_SERVER;
 	try {
@@ -61,7 +65,13 @@ const authenticate = async () => {
 		}
 	}
 };
-
+/**
+ * Get envelope details
+ * @param {object} args
+ * @param {string} args.accountId - credentials obtained from function `authenticate()`
+ * @param {string} args.envelopeId - ID of envelope
+ * @returns {Promise<object>} Envelope object
+ */
 const getEnvelope = async (args) => {
 	let envelopesApi = newEnvelopesApi(args);
 
@@ -74,7 +84,13 @@ const getEnvelope = async (args) => {
   return results;
 };
 
-const makeEnvelope = (args) => {
+/**
+ * To construct envelope object for payload to call docusign create api
+ * @param {Array<object>} args 
+ * @param {string } doc1b64 - Base64 string of the document to be use for signing
+ * @returns {object} Construct envelope object to be use as request payload
+ */
+const makeEnvelope = (args, doc1b64) => {
     // Data for this method
     // args.signerEmail
     // args.signerName
@@ -92,7 +108,7 @@ const makeEnvelope = (args) => {
   
     // add the documents
     let doc1 = new docusign.Document();
-    doc1.documentBase64 = args.doc1b64;
+    doc1.documentBase64 = doc1b64;
     doc1.name = 'Lorem Ipsum'; // can be different from actual file name
     doc1.fileExtension = 'html';
     doc1.documentId = '1';
@@ -140,12 +156,20 @@ const makeEnvelope = (args) => {
     return env;
 }
 
+/**
+ * To create envelope by calling docusign's api
+ * @param {object} args
+ * @param {Array<object>} args.envelopeArgs envelope arguments containing email, name, signer_client_id
+ * @param {string} args.doc1b64 Base64 string of the document to be used
+ * @param {string} args.accountId Credential obtained from function `authenticate()`
+ * @returns {Promise<object>} Created envelope data
+ */
 const createEnvelope = async (args) => {
 	let envelopesApi = newEnvelopesApi(args);
   let results = null;
 
   // Step 1. Make the envelope request body
-  let envelope = makeEnvelope(args.envelopeArgs);
+  let envelope = makeEnvelope(args.envelopeArgs, args.doc1b64);
 
   // Step 2. call Envelopes::create API method
   // Exceptions will be caught by the calling function
@@ -156,6 +180,16 @@ const createEnvelope = async (args) => {
   return results;
 }
 
+/**
+ * Construct payload request to make recipient view
+ * @param {object} args
+ * @param {string} args.dsReturnUrl - Return url for browser to redirect when finish viewing/signing document
+ * @param {string} args.signerEmail - Signer email who want to sign (needs to be the same when creating envelope)
+ * @param {string} args.signerName - Signer name who want to sign (needs to be the same when creating envelope)
+ * @param {string} args.signerClientId - Signer client id who want to sign (needs to be the same when creating envelope)
+ * @param {string} args.dsPingUrl
+ * @returns {object} Constructed request payload
+ */
 const makeRecipientViewRequest = (args) => {
   // Data for this method
   // args.dsReturnUrl
@@ -202,6 +236,18 @@ const makeRecipientViewRequest = (args) => {
   return viewRequest;
 }
 
+/**
+ * To request url for signer to view and sign document
+ * @param {object} args 
+ * @param {object} args.envelopeArgs
+ * @param {string} args.envelopeArgs.envelopeId - Which envelope to view and sign
+ * @param {string} args.envelopeArgs.dsReturnUrl - Return url for browser to redirect when finish viewing/signing document
+ * @param {string} args.envelopeArgs.signerEmail - Signer email who want to sign (needs to be the same when creating envelope)
+ * @param {string} args.envelopeArgs.signerName - Signer name who want to sign (needs to be the same when creating envelope)
+ * @param {string} args.envelopeArgs.signerClientId - Signer client id who want to sign (needs to be the same when creating envelope)
+ * @param {string} args.envelopeArgs.dsPingUrl
+ * @returns {Promise<object>} Object containing field url for visiting docusign document viewer and sign
+ */
 const requestSigning = async (args) => {
 	let envelopesApi = newEnvelopesApi(args);
 
@@ -215,6 +261,13 @@ const requestSigning = async (args) => {
   return recipientView;
 }
 
+/**
+ * To get list recipients of envelope
+ * @param {object} args 
+ * @param {string} args.accountId - Credential obtained from function `authenticate()`
+ * @param {string} args.envelopeId - Which envelope to get
+ * @returns {Promise<object>} Response from docusign api containing recipients of envelope
+ */
 const listRecipients = async (args) => {
 	let envelopesApi = newEnvelopesApi(args);
 
@@ -227,6 +280,13 @@ const listRecipients = async (args) => {
   return recipients;
 }
 
+/**
+ * To get the document file of envlope
+ * @param {object} args 
+ * @param {string} args.accountId - Credential obtained from function `authenticate()`
+ * @param {string} args.envelopeId - Which envelope to get
+ * @returns {Promise<Buffer>} Buffer of the document
+ */
 const getDocument = async (args) => {
 	let envelopesApi = newEnvelopesApi(args);
 
@@ -240,6 +300,13 @@ const getDocument = async (args) => {
   return docs;
 };
 
+/**
+ * To instantiate envelopes api
+ * @param {object} args 
+ * @param {object} args.basePath - The api base path obtained from function `authenticate()`
+ * @param {object} args.accessToken - JWT token obtained from function `authenticate()`
+ * @returns {docusign.EnvelopesApi} New instance of envelopes api object
+ */
 const newEnvelopesApi = (args) => {
   let dsApiClient = new docusign.ApiClient();
 	dsApiClient.setBasePath(args.basePath);
