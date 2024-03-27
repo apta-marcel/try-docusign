@@ -36,16 +36,22 @@ const makeRecipientViewRequest = async (req, res) => {
 };
 
 const getEnvelope = async (req, res) => {
-	const { envelope_id, event } = req.query;
-	const accountInfo = await docusignService.authenticate();
-	const args = {
-		...accountInfo,
-		envelopeId: envelope_id,
-	};
-
-	const envelope = await docusignService.getEnvelope(args);
-
-	return res.send({ envelope, event });
+	try {
+		const { envelope_id, event } = req.query;
+		const accountInfo = await docusignService.authenticate();
+		const args = {
+			...accountInfo,
+			envelopeId: envelope_id,
+		};
+	
+		const envelope = await docusignService.getEnvelope(args);
+	
+		return res.send({ envelope, event });
+	}
+	catch(e) {
+		console.log('/ :>> ', e.stack);
+		return res.status(500).send(e.stack);
+	}
 };
 
 const createEnvelope = async (req, res) => {
