@@ -16,7 +16,13 @@ module.exports = {
             "parserOptions": {
                 "sourceType": "script"
             }
-        }
+        },
+        {
+            "files": ["*.test.js"],
+            "env": {
+              "jest": true
+            }
+          }
     ],
     "parserOptions": {
         "ecmaVersion": "latest"
