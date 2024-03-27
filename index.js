@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -7,21 +7,22 @@ const docusignController = require('./controllers/docusign.controller');
 const morgan = require('morgan');
 
 const main = async () => {
-    docusignService.authenticate();
+	docusignService.authenticate();
 
-    const app = express();
+	const app = express();
 
-    app.use(bodyParser.json());
-    app.use(morgan('dev'));
+	app.use(bodyParser.json());
+	app.use(morgan('dev'));
 
-    app.get('/', docusignController.getEnvelope);
-    app.post('/create', docusignController.createEnvelope);
-    app.post('/sign', docusignController.makeRecipientViewRequest);
-    app.get('/recipients', docusignController.listRecipients);
-    app.get('/download', docusignController.download);
+	app.get('/', docusignController.getEnvelope);
+	app.post('/create', docusignController.createEnvelope);
+	app.post('/sign', docusignController.makeRecipientViewRequest);
+	app.get('/recipients', docusignController.listRecipients);
+	app.get('/download', docusignController.download);
 
-    app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}`));
-}
-
+	app.listen(process.env.PORT, () =>
+		console.log(`Listening on port ${process.env.PORT}`),
+	);
+};
 
 main();
